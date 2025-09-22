@@ -9,16 +9,18 @@ router.get('/tours/:limit/:offset', async(req,res) => {
         return res.json(toures.rows);
     }catch(error){
         console.error(error);
-        return res.status.json({mensaje : "Error 500 al querer retornar la lista de tours!"});
+        return res.status(500).json({mensaje : "Error 500 al querer retornar la lista de tours!"});
     }
     
 });
 
 router.get('/tours/availability', async(req,res) =>{
     try{
-        const disponibles = 0 ;
+        const disponibles = await pool.query('select * from tourApp.tour_schedules where (now() < schedule_time) and seats_available > 0');
+        return res.json(disponibles.rows);
     }catch(error){
-
+        console.error(error);
+        return res.status.json({mensaje :"Error 500 al querer mostrar los tours disponibles!"});
     }
 });
 

@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  database:
+    image: postgres:16
+    container_name: z_database
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      retries: 5
+
+  server:
+    depends_on:
+      database:
+        condition: service_healthy
+    build: ./backend
+    container_name: z_backend
+    ports:
+      - "${BACKEND_PORT}:3001"
+    environment:
+      DB_HOST: database
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+    command: npm run dev
+
+  client:
+    build: ./frontend
+    container_name: z_frontend
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    depends_on:
+      - server
+    command: npm start
+
+volumes:
+  db:

@@ -20,16 +20,19 @@ router.get('/tours/availability', async(req,res) =>{
         return res.json(disponibles.rows);
     }catch(error){
         console.error(error);
-        return res.status.json({mensaje :"Error 500 al querer mostrar los tours disponibles!"});
+        return res.status(500).json({mensaje :"Error 500 al querer mostrar los tours disponibles!"});
     }
 });
 
 
 router.put('/tours/reserve', async(req,res)=> {
     try{
-        const reservas = 0;
+        const {nombre,idReserva,fecha} = req.body;
+        await pool.query('update tourApp.reservations set person_name = $1, tour_schedule_id = $2 where reserved_at = $3',[nombre,idReserva,fecha]);
+        return res.json({mensaje : "Se ha actualizado la reserva!"});
     }catch(error){
-
+        console.error(error);
+        return res.status(500).json({mensaje : "Error 500 al querer actualizar la reserva!"});
     }
 });
 
